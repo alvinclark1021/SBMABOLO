@@ -1,0 +1,175 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Data.SqlClient;
+using System.Data;
+using System.Linq;
+using System.Web;
+using System.Web.Security;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Net.Mail;
+using System.Net;
+using System.Text;
+using System.Reflection.Emit;
+using System.Drawing;
+using DocumentFormat.OpenXml.Office2010.Word;
+
+
+namespace sangguniangbarangaymabolocityofmalolosbulacan
+{
+    public partial class PrintingClearance : System.Web.UI.Page
+    {
+        string cs = ConfigurationManager.ConnectionStrings["Databaseko"].ConnectionString;
+        string strConnString = ConfigurationManager.ConnectionStrings["Databaseko"].ConnectionString;
+        string str;
+        SqlCommand com;
+
+        SqlConnection con = new SqlConnection(ConfigurationManager.ConnectionStrings["Databaseko"].ConnectionString);
+        SqlCommand cmd;
+        SqlDataAdapter da;
+        DataTable dt;
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            
+            LoadEmailsending();
+           
+            lbldatess.Text = DateTime.Now.ToString("MMMM dd yyyy, dddd");
+            lbldate.Text = DateTime.Now.ToString("MMMM dd yyyy, dddd");
+            lbldates.Text = DateTime.Now.ToString("MMMM dd yyyy, dddd");
+            lbldate.Text = DateTime.Now.ToString("MMMM dd yyyy, dddd HH:mm ");
+            if (Session["admin"] != null)
+            {
+                lblfullname.Text = Session["admin"].ToString();
+
+            }
+            else
+            {
+                SqlConnection conss = new SqlConnection(ConfigurationManager.ConnectionStrings["Databaseko"].ConnectionString);
+                SqlCommand cmdss;
+                cmdss = new SqlCommand(@"Insert Into Activity (Username,Activity,Date) Values (@Username,@Activity,@Date)");
+
+                cmdss.Parameters.AddWithValue("@Username", lblsessionlogin.Text);
+                cmdss.Parameters.AddWithValue("@Activity", lblsession.Text);
+                cmdss.Parameters.AddWithValue("@Date", lbldate.Text);
+
+                conss.Open();
+                cmdss.Connection = conss;
+                cmdss.ExecuteNonQuery();
+                conss.Close();
+                Response.Redirect("BarangayOfficalLogin.aspx");
+            }
+
+            if (this.Page.User.Identity.IsAuthenticated)
+            {
+                Response.Redirect(FormsAuthentication.DefaultUrl);
+            }
+
+            SqlConnection con = new SqlConnection(strConnString);
+            con.Open();
+            str = "select * from BarangayOfficalInformation where tbl_Email='" + Session["admin"] + "'";
+            com = new SqlCommand(str, con);
+            SqlDataAdapter da = new SqlDataAdapter(com);
+            DataSet ds = new DataSet();
+            da.Fill(ds);
+            lblfullname.Text = ds.Tables[0].Rows[0]["tbl_Fullname"].ToString();
+            lblsessionlogin.Text = ds.Tables[0].Rows[0]["tbl_Email"].ToString();
+            lblbarangayofficals.Text = ds.Tables[0].Rows[0]["tbl_BarangayOfficalPosition"].ToString();
+            lblfullnames.Text = ds.Tables[0].Rows[0]["tbl_Fullname"].ToString();
+        }
+
+
+       private void LoadEmailsending()
+        {
+            try
+            {
+                con.Open();
+                cmd = new SqlCommand(@"SELECT * FROM BarangayClearanceInfomation WHERE ID = '" + Session["ID"].ToString() + "'", con);
+                da = new SqlDataAdapter(cmd);
+                dt = new DataTable();
+                da.Fill(dt);
+
+                if (dt.Rows.Count > 0)
+                {
+                    Session["ID"] = int.Parse(dt.Rows[0]["ID"].ToString());
+                    lblids.Text = dt.Rows[0]["ID"].ToString();
+                    lblemail.Text = dt.Rows[0]["email"].ToString();
+                    lblstatus.Text = dt.Rows[0]["Status"].ToString();
+                    lblfullnameq.Text = dt.Rows[0]["fullname"].ToString();
+                    lblcontrolnumber.Text = dt.Rows[0]["barangayControlnumber"].ToString();
+                    lbladdress.Text = dt.Rows[0]["address"].ToString();
+                    lblnamess.Text = dt.Rows[0]["fullname"].ToString();
+
+                }
+                con.Close();
+            }
+
+            catch
+            {
+                Response.Redirect("PrintingClearance.aspx");
+            }
+           
+        }
+
+
+        protected void Linkchangepasswprd_Click(object sender, EventArgs e)
+        {
+            Response.Redirect("BarangayAdminChangepassword.aspx");
+        }
+
+        protected void linkprofile_Click(object sender, EventArgs e)
+        {
+            Response.Redirect("BarangayAdminProfilesettings.aspx");
+        }
+
+        SqlConnection conss = new SqlConnection(ConfigurationManager.ConnectionStrings["Databaseko"].ConnectionString);
+        SqlCommand cmdss;
+        protected void Linklogout_Click(object sender, EventArgs e)
+        {
+            Session.RemoveAll();
+            Session.Abandon();
+            Response.Redirect("BarangayOfficalLogin.aspx");
+            cmdss = new SqlCommand(@"Insert Into Activity (Username,Date,Activity) Values (@Username,@Date,@Activity)", conss);
+
+            cmdss.Parameters.AddWithValue("@Username", lblfullname.Text);
+            cmdss.Parameters.AddWithValue("@Date", lbldate.Text);
+            cmdss.Parameters.AddWithValue("@Activity", lbllogout.Text);
+            conss.Open();
+            cmdss.Connection = conss;
+            cmdss.ExecuteNonQuery();
+            conss.Close();
+        }
+
+        private void send()
+        {
+            MailMessage msg = new MailMessage();
+            StringBuilder sb = new StringBuilder();
+            sb.Append("Hi, " + lblfullnameq.Text + "<br/>After reviewing your requested document, we are informing you that it is ready to pick up now.");
+            sb.Append("<b>Thank you.</b> From: Sangguniang Barangay Mabolo City of Malolos Bulacan <br/>");
+
+            MailMessage message = new System.Net.Mail.MailMessage("sbmabolo522@gmail.com", lblemail.Text.Trim(), "Approved Requested Document", sb.ToString());
+
+            SmtpClient smtp = new SmtpClient();
+            smtp.Host = "smtp.gmail.com";
+            smtp.Port = 587;
+            smtp.Credentials = new System.Net.NetworkCredential("sbmabolo522@gmail.com", "uivsblcztjuwxtlx");
+            smtp.EnableSsl = true;
+            message.IsBodyHtml = true;
+            smtp.Send(message);
+        }
+
+
+        SqlConnection cons = new SqlConnection(ConfigurationManager.ConnectionStrings["Databaseko"].ConnectionString);
+        SqlCommand cmds;
+        protected void printButton_Click(object sender, EventArgs e)
+        {
+            cons.Open();
+            cmds = new SqlCommand(@"UPDATE BarangayClearanceInfomation SET Status='Ready To Pickup' WHERE ID = '" + Session["ID"].ToString() + "'", cons);
+            cmds.ExecuteNonQuery();
+            cons.Close();
+            send();
+
+            
+        }
+    }
+}

@@ -1,0 +1,29 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="ResidentDashboard.master.cs" Inherits="sangguniangbarangaymabolocityofmalolosbulacan.ResidentDashboard" %>
+
+<!DOCTYPE html>
+
+<html>
+<head runat="server">
+	<title>Resident Dashboard</title>
+	<!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <!-- Template CSS -->
+  <link rel="stylesheet" href="ResidentInterface/assets/css/style-starter.css">
+  <!-- google fonts -->
+
+  <!-- google fonts -->
+  <link href="//fonts.googleapis.com/css?family=Nunito:300,400,600,700,800,900&display=swap" rel="stylesheet">
+    <asp:ContentPlaceHolder ID="head" runat="server">
+    </asp:ContentPlaceHolder>
+</head>
+<body>
+    <form id="form1" runat="server">
+          
+        <div>
+            <asp:ContentPlaceHolder ID="ContentPlaceHolder1" runat="server">
+            </asp:ContentPlaceHolder>
+        </div>
+    </form>
+</body>
+</html>
